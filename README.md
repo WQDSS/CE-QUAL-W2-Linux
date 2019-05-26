@@ -1,4 +1,8 @@
 # This is a port of the CE-QUAL-W2 model to linux
+Original content is available on http://www.ce.pdx.edu/w2/
+Note, the branch 'vanilla' contains the non-modified code, and master branch contains the patched code.
+Appropriate tags (per release) are placed on all branches (currently v4.1)
+
 ## Changes from vanilla version
 1. Added a preprocessor flag to remove any dependency on windows UI contents
 1. Added a Makefile to compile on Linux
