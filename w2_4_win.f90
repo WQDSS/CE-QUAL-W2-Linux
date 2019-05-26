@@ -1,12 +1,20 @@
 ! CE-QUAL-W2 computations
+#ifdef CLI_ONLY
+PROGRAM CE_QUAL_W2
+#else
 INTEGER(4) FUNCTION CE_QUAL_W2 (DLG)
+#endif
 
 ! IVF/CVF specific code
 
+#ifndef CLI_ONLY
   USE DFLOGM; USE MSCLIB; USE DFWIN, RENAMED => DLT;
 
  !DEC$ATTRIBUTES STDCALL   :: ce_qual_w2
  !DEC$ATTRIBUTES REFERENCE :: Dlg
+#else
+    USE MSCLIB, only: RESTART_PUSHED, STOP_PUSHED
+#endif  
   USE IFPORT                 ! to get current working directory
   USE MAIN
   USE GLOBAL;     USE NAMESC; USE GEOMC;  USE LOGICC; USE PREC;  USE SURFHE;  USE KINETIC; USE SHADEC; USE EDDY
@@ -20,7 +28,9 @@ INTEGER(4) FUNCTION CE_QUAL_W2 (DLG)
  ! include "omp_lib.h"      ! OPENMP directive to adjust the # of processors TOGGLE FOR DEBUG
 
   EXTERNAL RESTART_OUTPUT
+#ifndef CLI_ONLY
   TYPE (DIALOG) :: DLG
+#endif
   INTEGER       :: RESULT
   REAL          :: DEPTH
 
@@ -168,7 +178,9 @@ Call CEMA_W2_Input
     READ(RSI)TPOUT,TPTRIB,TPDTRIB,TPWD,TPPR,TPIN,TP_SEDSOD_PO4,PFLUXIN,TNOUT,TNTRIB,TNDTRIB,TNWD,TNPR,TNIN,TN_SEDSOD_NH4,NFLUXIN    ! TP_SEDBURIAL,TN_SEDBURIAL,
     CLOSE (RSI)
   END IF
+#ifndef CLI_ONLY
   CE_QUAL_W2 =  1
+#endif  
 CALL INIT
 
 ! determining initial horizontal velocities and water levels
@@ -201,8 +213,10 @@ CALL INIT
 
   IF (.NOT. RESTART_IN) THEN
     LINE    = CCTIME(1:2)//':'//CCTIME(3:4)//':'//CCTIME(5:6)
+#ifndef CLI_ONLY   
     RESULT  = DLGSET (DLG,STARTING_TIME,TRIM(LINE))                                                   !Display starting time
     RESULT  = DLGSET (DLG,STATUS,'Executing')                                                         !Display execution status
+#endif    
     CURRENT = 0.0
   ELSE
     CALL CPU_TIME (CURRENT)
@@ -211,7 +225,9 @@ CALL INIT
   CALL OUTPUTINIT
     IF (RESTART_IN) THEN
     DO JW=1,NWB
+#ifndef CLI_ONLY          
       IF (SCREEN_OUTPUT(JW))CALL SCREEN_UPDATE(DLG)
+#endif      
     ENDDO
     ENDIF
 
@@ -1369,7 +1385,9 @@ DO JW=1,NWB
           END IF
           KT         = KTWB(JW)
           NXTMSC(JW) = NXTMSC(JW)+SCRF(SCRDP(JW),JW)
+#ifndef CLI_ONLY          
           CALL SCREEN_UPDATE (DLG)
+#endif          
           CALL DATE_AND_TIME (CDATE,CCTIME)
  !         DO JH=1,NHY
  !           IF (HYDRO_PLOT(JH))       CALL GRAPH_UPDATE (JH,HYD(:,:,JH),     HNAME(JH), HYMIN(JH),1.0,       LNAME(JH))
@@ -1402,7 +1420,7 @@ CALL ENDSIMULATION
 
 240 CONTINUE
 !  CALL DEALLOCATE_GRAPH
-  
+#ifndef CLI_ONLY
   IF(CLOSEC=='      ON' .AND. END_RUN)THEN
   CALL EXITDIALOG(DLG,TEXT)
   ELSE
@@ -1410,3 +1428,6 @@ CALL ENDSIMULATION
   ENDIF
   RETURN
 END FUNCTION CE_QUAL_W2
+#else
+END PROGRAM CE_QUAL_W2
+#endif    
